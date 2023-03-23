@@ -7,7 +7,7 @@ using ExcelDataReader;
 using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
-
+using System.Linq;
 public class ExcelToJSON : EditorWindow
 {
     private string excelFilePath;
@@ -77,7 +77,13 @@ public class ExcelToJSON : EditorWindow
             jsonFileName += ".json";
         }
 
-        jsonFilePath = Path.GetDirectoryName(excelFilePath);
+        jsonFilePath = "Assets/GeneratedJSONFromExcel";
+        if (!AssetDatabase.IsValidFolder(jsonFilePath))
+        {
+            string parentFolder = Path.GetDirectoryName(jsonFilePath);
+            string newFolderName = Path.GetFileName(jsonFilePath);
+            AssetDatabase.CreateFolder(parentFolder, newFolderName);
+        }
         jsonFullPath = Path.Combine(jsonFilePath, jsonFileName);
 
         // Write the JSON string to a file
@@ -99,7 +105,7 @@ public class ExcelToJSON : EditorWindow
             }
         }
 
-        GenerateModelClassFromJSON(Path.GetFileNameWithoutExtension(jsonFileName), jsonString);
+        GenerateModelClassFromJSON(Path.GetFileNameWithoutExtension(jsonFileName), jsonString, jsonFullPath);
         Debug.Log("Excel file converted to JSON successfully!");
     }
 
@@ -235,7 +241,7 @@ public class ExcelToJSON : EditorWindow
         File.WriteAllText(filePath, jsonString);
     }
 
-    private void GenerateModelClassFromJSON(string scriptName, string jsonString)
+    private void GenerateModelClassFromJSON(string scriptName, string jsonString, string jsonFullPath)
     {
         string folderPath = "Assets/Scripts/ModelScripts";
         string scriptPath = $"Assets/Scripts/ModelScripts/{scriptName}.cs";
@@ -247,7 +253,9 @@ public class ExcelToJSON : EditorWindow
             Debug.LogError("Failed to deserialize JSON file");
             return;
         }
-       
+
+        Dictionary<string, object> firstRow = data.Values.First();
+
         if (!AssetDatabase.IsValidFolder(folderPath))
         {
             if (!AssetDatabase.IsValidFolder("Assets/Scripts"))
@@ -256,51 +264,67 @@ public class ExcelToJSON : EditorWindow
             }
             AssetDatabase.CreateFolder("Assets/Scripts", "ModelScripts");
         }
+
         using (StreamWriter sw = new StreamWriter("Assets/Scripts/ModelScripts/" + scriptName + ".cs"))
         {
             sw.WriteLine("using System;");
             sw.WriteLine("using System.Collections.Generic;");
+            sw.WriteLine("using System.IO;");
+            sw.WriteLine("using Newtonsoft.Json;");
+            sw.WriteLine("using UnityEngine;");
             sw.WriteLine("");
             sw.WriteLine("[Serializable]");
             sw.WriteLine("public class " + scriptName);
             sw.WriteLine("{");
 
-            foreach (string key in data.Keys)
+            // Generate properties from the first row of the data
+            foreach (string colName in firstRow.Keys)
             {
-                Dictionary<string, object> row = data[key];
-                foreach (string colName in row.Keys)
+                object colValue = firstRow[colName];
+                switch (colValue.GetType().ToString())
                 {
-                    object colValue = row[colName];
-                    Debug.Log("value type = " + colValue.GetType().ToString());
-                    // Use switch case to write the C# data type based on the value's data type
-                    switch (colValue.GetType().ToString())
-                    {
-                        case "System.Int64":
-                            sw.WriteLine("    public int " + colName + key + " { get; set; }");
-                            break;
-                        case "System.String":
-                            sw.WriteLine("    public string " + colName + key + " { get; set; }");
-                            break;
-                        case "System.Boolean":
-                            sw.WriteLine("    public bool " + colName + key + " { get; set; }");
-                            break;
-                        case "System.Char":
-                            sw.WriteLine("    public float " + colName + key + " { get; set; }");
-                            break;
-                        case "System.Double":
-                            sw.WriteLine("    public double " + colName + key + " { get; set; }");
-                            break;
-                        default:
-                            Debug.LogWarning($"Unsupported data type for column {colName} in row {key}");
-                            break;
-                    }
+                    case "System.Int64":
+                        sw.WriteLine("    public int " + colName + " { get; set; }");
+                        break;
+                    case "System.String":
+                        sw.WriteLine("    public string " + colName + " { get; set; }");
+                        break;
+                    case "System.Boolean":
+                        sw.WriteLine("    public bool " + colName + " { get; set; }");
+                        break;
+                    case "System.Char":
+                        sw.WriteLine("    public float " + colName + " { get; set; }");
+                        break;
+                    case "System.Double":
+                        sw.WriteLine("    public double " + colName + " { get; set; }");
+                        break;
+                    default:
+                        Debug.LogWarning($"Unsupported data type for column {colName}");
+                        break;
                 }
             }
+
+            sw.WriteLine("");
+            sw.WriteLine("    public static string JsonFilePath => \"" + jsonFullPath.Replace("\\", "\\\\") + "\";");
+            sw.WriteLine("");
+            sw.WriteLine("    public static " + $"Dictionary<string,{scriptName}>" + " LoadData()");
+            sw.WriteLine("    {");
+            sw.WriteLine("        if (File.Exists(JsonFilePath))");
+            sw.WriteLine("        {");
+            sw.WriteLine("            string jsonString = File.ReadAllText(JsonFilePath);");
+            sw.WriteLine("            Dictionary<string, " + scriptName + "> data = JsonConvert.DeserializeObject<Dictionary<string, " + scriptName + ">>(jsonString);");
+            sw.WriteLine("            return data;");
+            sw.WriteLine("        }");
+            sw.WriteLine("        else");
+            sw.WriteLine("        {");
+            sw.WriteLine("            Debug.LogError(\"JSON file not found at: \" + JsonFilePath);");
+            sw.WriteLine("            return null;");
+            sw.WriteLine("        }");
+            sw.WriteLine("    }");
 
             sw.WriteLine("}");
         }
 
         AssetDatabase.Refresh();
-
     }
 }
