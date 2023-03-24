@@ -4,6 +4,7 @@
 - [Animation Utility](#animation-utility)
 - [Event Utility](#event-utility)
 - [Addressable Utility](#addressable-utility)
+- [Default Folder Generator](#default-folder-generator)
 
 # KoreUtilitiesAndEditorTools
 
