@@ -14,7 +14,7 @@ public class ExcelToJSON : EditorWindow
     private string jsonFilePath;
     private string jsonFileName;
     private string jsonFullPath;
-    [MenuItem("Window/CodeWithK/Excel To JSON Converter")]
+    [MenuItem("CodeWithK/Excel To JSON Converter")]
     public static void ShowWindow()
     {
         EditorWindow.GetWindow(typeof(ExcelToJSON));

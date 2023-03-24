@@ -310,3 +310,10 @@ The AddressableUtility class provides utility functions for loading, preloading,
 **assetName:** The name of the asset to get.**Returns:** The loaded asset.`public static Task UnloadAddressable(string assetName)`Unloads the Unity Addressable asset with the specified asset name asynchronously.
 
 **assetName:** The name of the asset to unload.**Returns:** A Task representing the completion of the operation.`public static void UnloadAllAddressables()`Unloads all the loaded Unity Addressable assets asynchronously.
+
+
+# **Default Folder Generator** <a name="default-folder-generator"></a>
+
+This editor window will generate default folder,s which are:
+**Scripts**,**Art**,**Animations**,**Audio**,**Prefabs**,**Scenes**,**Resources**,**Materials**,**Textures**,**Fonts**,**ThirdParty**
+Ofcourse these are editable you can simply go into the editor script and change the folder's you want to generate.

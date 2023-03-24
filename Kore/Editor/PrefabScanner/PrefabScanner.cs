@@ -8,7 +8,7 @@ public class PrefabScanner : EditorWindow
     private static GameObject selectedPrefab;
     private string scriptName = "";
 
-    [MenuItem("Window/CodeWithK/Prefab Scanner")]
+    [MenuItem("CodeWithK/Prefab Scanner")]
     public static void ShowWindow()
     {
         EditorWindow.GetWindow(typeof(PrefabScanner));
