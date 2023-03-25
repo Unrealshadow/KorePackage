@@ -184,39 +184,46 @@ public class PrefabScanner : EditorWindow
     }
 
     private void WriteScriptContent(StreamWriter writer)
-    {
-        writer.WriteLine("using UnityEngine;");
-        writer.WriteLine("using System;");
-        writer.WriteLine("using UnityEngine.UI;");
-        writer.WriteLine("using TMPro;");
+{
+    writer.WriteLine("using UnityEngine;");
+    writer.WriteLine("using System;");
+    writer.WriteLine("using UnityEngine.UI;");
+    writer.WriteLine("using TMPro;");
 
-        writer.WriteLine("");
-        writer.WriteLine("[Serializable]");
-        writer.WriteLine("public class " + scriptName + " : MonoBehaviour");
-        writer.WriteLine("{");
+    writer.WriteLine("");
+    writer.WriteLine("[Serializable]");
+    writer.WriteLine("public class " + scriptName + " : MonoBehaviour");
+    writer.WriteLine("{");
 
-        FindSerializedFields(selectedPrefab, writer);
+    FindSerializedFieldsRecursive(selectedPrefab, writer);
 
-        writer.WriteLine("\tprivate void Start()");
-        writer.WriteLine("\t{");
-        writer.WriteLine("\t\tAssignUIComponents();");
-        writer.WriteLine("\t}");
+    writer.WriteLine("\tprivate void Start()");
+    writer.WriteLine("\t{");
+    writer.WriteLine("\t\tAssignUIComponents();");
+    writer.WriteLine("\t}");
 
-        writer.WriteLine("\tpublic void AssignUIComponents()");
-        writer.WriteLine("\t{");
-        writer.WriteLine("\t\tforeach (Transform child in transform)");
-        writer.WriteLine("\t\t{");
-        writer.WriteLine("\t\t\tswitch(child.gameObject.name)");
-        writer.WriteLine("\t\t\t{");
+    writer.WriteLine("\tpublic void AssignUIComponents()");
+    writer.WriteLine("\t{");
+    writer.WriteLine("\t\tAssignUIComponentsRecursive(gameObject);");
+    writer.WriteLine("\t}");
 
-        AssignUIComponents(selectedPrefab, writer);
+    writer.WriteLine("\tprivate void AssignUIComponentsRecursive(GameObject obj)");
+    writer.WriteLine("\t{");
+    writer.WriteLine("\t\tforeach (Transform child in obj.transform)");
+    writer.WriteLine("\t\t{");
+    writer.WriteLine("\t\t\tswitch(child.gameObject.name)");
+    writer.WriteLine("\t\t\t{");
 
-        writer.WriteLine("\t\t\t}");
-        writer.WriteLine("\t\t}");
-        writer.WriteLine("\t}");
+    AssignUIComponentsRecursive(selectedPrefab, writer);
 
-        writer.WriteLine("}");
-    }
+    writer.WriteLine("\t\t\t}");
+    writer.WriteLine("\t\t\tAssignUIComponentsRecursive(child.gameObject);");
+    writer.WriteLine("\t\t}");
+    writer.WriteLine("\t}");
+
+    writer.WriteLine("}");
+}
+
 
     private void AddGeneratedScriptToPrefab()
     {
@@ -242,68 +249,50 @@ public class PrefabScanner : EditorWindow
         prefab.AddComponent(script.GetClass());
     }
 
-    private void FindSerializedFields(Transform parent, StreamWriter writer)
+    private void FindSerializedFieldsRecursive(GameObject obj, StreamWriter writer)
 {
-    // Find all UI elements that have a name starting with "m_" in the current parent
-    foreach (Transform child in parent)
+    foreach (Transform child in obj.transform)
     {
         if (child.gameObject.name.StartsWith("m_"))
         {
-            // Get the type of the UI component attached to the element
-            Component uiComponent = child.gameObject.GetComponent(typeof(Component));
-            if (uiComponent != null)
-            {
-                System.Type uiComponentType = uiComponent.GetType();
-
-                // Write a public field for the UI element of the appropriate type
-                string fieldName = child.gameObject.name;
-                writer.WriteLine(
-                    "\tpublic "
-                        + uiComponentType.Name
-                        + " "
-                        + fieldName
-                        + ";"
-                );
-            }
+            string fieldName = child.gameObject.name;
+            writer.WriteLine(
+                "\tpublic "
+                    + child.gameObject.GetComponent<UnityEngine.UI.Graphic>().GetType().Name
+                    + " "
+                    + fieldName
+                    + ";"
+            );
         }
 
-        // Recurse into the child's children
-        FindSerializedFields(child, writer);
+        FindSerializedFieldsRecursive(child.gameObject, writer);
     }
 }
 
-private void AssignUIComponents(Transform parent, StreamWriter writer)
+private void AssignUIComponentsRecursive(GameObject obj, StreamWriter writer)
 {
-    // Recurse through all children of the parent
-    foreach (Transform child in parent)
+    foreach (Transform child in obj.transform)
     {
         if (child.gameObject.name.StartsWith("m_"))
         {
-            // Get the type of the UI component attached to the element
-            Component uiComponent = child.gameObject.GetComponent(typeof(Component));
-            if (uiComponent != null)
-            {
-                System.Type uiComponentType = uiComponent.GetType();
+            string componentName = child.gameObject
+                .GetComponent<UnityEngine.UI.Graphic>()
+                .GetType()
+                .Name;
+            writer.WriteLine("\t\t\t\tcase \"" + child.gameObject.name + "\":");
+            writer.WriteLine(
+                "\t\t\t\t\t"
+                    + child.gameObject.name
+                    + " = child.gameObject.GetComponent<"
+                    + componentName
+                    + ">();"
+            );
+            writer.WriteLine("\t\t\t\t\tbreak;");
+        }
 
-                // Write a switch case for the UI element to assign the component to the appropriate field
-                string elementName = child.gameObject.name;
-                writer.WriteLine("\t\t\t\tcase \"" + elementName + "\":");
-                writer.WriteLine(
-                    "\t\t\t\t\t"
-                        + elementName
-                        + " = child.GetComponent<"
-                        + uiComponentType.Name
-                        + ">();"
-                );
-                writer.WriteLine("\t\t\t\t\tbreak;");
-            }
-        }
-        else
-        {
-            // Recurse into the child's children
-            AssignUIComponents(child, writer);
-        }
+        AssignUIComponentsRecursive(child.gameObject, writer);
     }
 }
+
 
 }
