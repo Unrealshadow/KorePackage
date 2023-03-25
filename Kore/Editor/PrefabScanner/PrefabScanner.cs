@@ -242,60 +242,68 @@ public class PrefabScanner : EditorWindow
         prefab.AddComponent(script.GetClass());
     }
 
-    private void FindSerializedFields(GameObject obj, StreamWriter writer)
+    private void FindSerializedFields(Transform parent, StreamWriter writer)
+{
+    // Find all UI elements that have a name starting with "m_" in the current parent
+    foreach (Transform child in parent)
     {
-        List<GameObject> uiElements = new List<GameObject>();
-
-        foreach (Transform child in obj.transform)
+        if (child.gameObject.name.StartsWith("m_"))
         {
-            if (child.gameObject.name.StartsWith("m_"))
+            // Get the type of the UI component attached to the element
+            Component uiComponent = child.gameObject.GetComponent(typeof(Component));
+            if (uiComponent != null)
             {
-                uiElements.Add(child.gameObject);
+                System.Type uiComponentType = uiComponent.GetType();
+
+                // Write a public field for the UI element of the appropriate type
+                string fieldName = child.gameObject.name;
+                writer.WriteLine(
+                    "\tpublic "
+                        + uiComponentType.Name
+                        + " "
+                        + fieldName
+                        + ";"
+                );
             }
         }
 
-        foreach (GameObject uiElement in uiElements)
-        {
-            string fieldName = uiElement.name;
-            writer.WriteLine(
-                "\tpublic "
-                    + uiElement.GetComponent<UnityEngine.UI.Graphic>().GetType().Name
-                    + " "
-                    + fieldName
-                    + ";"
-            );
-        }
-
-        foreach (Transform child in obj.transform)
-        {
-            FindSerializedFields(child.gameObject, writer);
-        }
+        // Recurse into the child's children
+        FindSerializedFields(child, writer);
     }
+}
 
-    private void AssignUIComponents(GameObject obj, StreamWriter writer)
+private void AssignUIComponents(Transform parent, StreamWriter writer)
+{
+    // Recurse through all children of the parent
+    foreach (Transform child in parent)
     {
-        foreach (Transform child in obj.transform)
+        if (child.gameObject.name.StartsWith("m_"))
         {
-            if (child.gameObject.name.StartsWith("m_"))
+            // Get the type of the UI component attached to the element
+            Component uiComponent = child.gameObject.GetComponent(typeof(Component));
+            if (uiComponent != null)
             {
-                string componentName = child.gameObject
-                    .GetComponent<UnityEngine.UI.Graphic>()
-                    .GetType()
-                    .Name;
-                writer.WriteLine("\t\t\t\tcase \"" + child.gameObject.name + "\":");
+                System.Type uiComponentType = uiComponent.GetType();
+
+                // Write a switch case for the UI element to assign the component to the appropriate field
+                string elementName = child.gameObject.name;
+                writer.WriteLine("\t\t\t\tcase \"" + elementName + "\":");
                 writer.WriteLine(
                     "\t\t\t\t\t"
-                        + child.gameObject.name
-                        + " = child.gameObject.GetComponent<"
-                        + componentName
+                        + elementName
+                        + " = child.GetComponent<"
+                        + uiComponentType.Name
                         + ">();"
                 );
                 writer.WriteLine("\t\t\t\t\tbreak;");
             }
-            else
-            {
-                AssignUIComponents(child.gameObject, writer);
-            }
+        }
+        else
+        {
+            // Recurse into the child's children
+            AssignUIComponents(child, writer);
         }
     }
+}
+
 }
