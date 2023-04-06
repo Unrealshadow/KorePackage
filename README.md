@@ -5,6 +5,7 @@
 - [Event Utility](#event-utility)
 - [Addressable Utility](#addressable-utility)
 - [Default Folder Generator](#default-folder-generator)
+- [Display Utility 2D](#display-utility-2D)
 
 # KoreUtilitiesAndEditorTools
 
@@ -302,15 +303,15 @@ The AddressableUtility class provides utility functions for loading, preloading,
 
 `public static async Task<T> LoadAddressableAsset<T>(string assetName) where T : Object`Loads the Unity Addressable asset with the specified asset name asynchronously and returns the loaded asset. If the asset is already loaded, the function returns the loaded asset immediately.
 
-**assetName:** The name of the asset to load.Returns: The loaded asset.`public static async Task<T> LoadAddressableAssetAsync<T>(string assetName) where T : Object`Loads the Unity Addressable asset with the specified asset name asynchronously and returns the loaded asset. If the asset is already loaded, the function returns the loaded asset immediately.
+**assetName:** The name of the asset to load.Returns: The loaded asset.`public static async Task<T> LoadAddressableAssetAsync<T>(string assetName) where T : Object`Loads the Unity Addressable asset with the specified asset name asynchronously and returns the loaded asset. If the asset is already loaded, the function returns the loaded asset immediately.
 
-**assetName:** The name of the asset to load.**Returns:** The loaded asset.`public static async Task PreloadAddressables(IEnumerable<string> assetNames)`Preloads a list of Unity Addressable assets asynchronously.
+**assetName:** The name of the asset to load.**Returns:** The loaded asset.`public static async Task PreloadAddressables(IEnumerable<string> assetNames)`Preloads a list of Unity Addressable assets asynchronously.
 
-**assetNames:** A list of asset names to preload.`public static T GetFromPool<T>(string assetName) where T : Object`Returns the loaded Unity Addressable asset with the specified asset name from the object pool.
+**assetNames:** A list of asset names to preload.`public static T GetFromPool<T>(string assetName) where T : Object`Returns the loaded Unity Addressable asset with the specified asset name from the object pool.
 
-**assetName:** The name of the asset to get.**Returns:** The loaded asset.`public static Task UnloadAddressable(string assetName)`Unloads the Unity Addressable asset with the specified asset name asynchronously.
+**assetName:** The name of the asset to get.**Returns:** The loaded asset.`public static Task UnloadAddressable(string assetName)`Unloads the Unity Addressable asset with the specified asset name asynchronously.
 
-**assetName:** The name of the asset to unload.**Returns:** A Task representing the completion of the operation.`public static void UnloadAllAddressables()`Unloads all the loaded Unity Addressable assets asynchronously.
+**assetName:** The name of the asset to unload.**Returns:** A Task representing the completion of the operation.`public static void UnloadAllAddressables()`Unloads all the loaded Unity Addressable assets asynchronously.
 
 
 # **Default Folder Generator** <a name="default-folder-generator"></a>
@@ -318,3 +319,10 @@ The AddressableUtility class provides utility functions for loading, preloading,
 This editor window will generate default folder,s which are:
 **Scripts**,**Art**,**Animations**,**Audio**,**Prefabs**,**Scenes**,**Resources**,**Materials**,**Textures**,**Fonts**,**ThirdParty**
 Ofcourse these are editable you can simply go into the editor script and change the folder's you want to generate.
+
+# **Display Utility 2D** <a name="display-utility-2D"></a>
+**Display Utility 2D** contains a set of static functions namely</br>
+**GetHeight(Camera camera)** which returns the height of the view port based on the orthographic size of the camera.</br>
+**GetWidth(Camera camera)** which returns the width of the view port based on the orthographic size of the camera.</br>
+**GetExtremeLeft(Camera camera)** returns the extreme left point of the view.</br>
+**GetExtremeRight(Camera camera)** returns the extreme right point of the view.</br>
