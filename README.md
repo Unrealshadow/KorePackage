@@ -6,7 +6,7 @@
 - [Addressable Utility](#addressable-utility)
 - [Default Folder Generator](#default-folder-generator)
 - [Display Utility 2D](#display-utility-2D)
-
+- [Missing Script Remover](#missing-script-remover)
 # KoreUtilitiesAndEditorTools
 
 ## **ExcelToJSON Converter** <a name="exceltojson"></a>
@@ -326,3 +326,7 @@ Ofcourse these are editable you can simply go into the editor script and change 
 **GetWidth(Camera camera)** which returns the width of the view port based on the orthographic size of the camera.</br>
 **GetExtremeLeft(Camera camera)** returns the extreme left point of the view.</br>
 **GetExtremeRight(Camera camera)** returns the extreme right point of the view.</br>
+    
+# **Missing Script Remover** <a name="missing-script-remover"></a>
+  This editor tool removes missing scripts from selected objects in the heirarchy, if you have multiple objects this tool makes it easy to remove missing scripts from all of them as well as their children
+
