@@ -4,7 +4,7 @@ using System.Data;
 using System.IO;
 using System.Text;
 using ExcelDataReader;
-using Newtonsoft.Json;
+using Unity.Plastic.Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
