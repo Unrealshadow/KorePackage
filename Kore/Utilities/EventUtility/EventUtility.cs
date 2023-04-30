@@ -6,15 +6,45 @@ using UnityEngine.Events;
 public static class EventUtility
 {
     // Dictionary of events with string keys and UnityEvent values
-    private static Dictionary<string, UnityEvent> eventDictionary = new Dictionary<string, UnityEvent>();
+    private static Dictionary<string, UnityEventBase> eventDictionary = new Dictionary<string, UnityEventBase>();
 
     // Adds a listener to the event with the specified name
+    public static void AddListener<T>(string eventName, UnityAction<T> action)
+    {
+        UnityEvent<T> unityEvent;
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
+        {
+            unityEvent = baseEvent as UnityEvent<T>;
+            if (unityEvent != null)
+            {
+                unityEvent.AddListener(action);
+            }
+            else
+            {
+                Debug.LogError("Incorrect event type for parameter");
+            }
+        }
+        else
+        {
+            unityEvent = new UnityEvent<T>();
+            unityEvent.AddListener(action);
+            eventDictionary.Add(eventName, unityEvent);
+        }
+    }
     public static void AddListener(string eventName, UnityAction action)
     {
         UnityEvent unityEvent;
-        if (eventDictionary.TryGetValue(eventName, out unityEvent))
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
         {
-            unityEvent.AddListener(action);
+            unityEvent = baseEvent as UnityEvent;
+            if (unityEvent != null)
+            {
+                unityEvent.AddListener(action);
+            }
+            else
+            {
+                Debug.LogError("Incorrect event type for parameter");
+            }
         }
         else
         {
@@ -24,13 +54,30 @@ public static class EventUtility
         }
     }
 
-    // Removes a listener from the event with the specified name
     public static void RemoveListener(string eventName, UnityAction action)
     {
         UnityEvent unityEvent;
-        if (eventDictionary.TryGetValue(eventName, out unityEvent))
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
         {
-            unityEvent.RemoveListener(action);
+            unityEvent = baseEvent as UnityEvent;
+            if (unityEvent != null)
+            {
+                unityEvent.RemoveListener(action);
+            }
+        }
+    }
+
+    // Removes a listener from the event with the specified name
+    public static void RemoveListener<T>(string eventName, UnityAction<T> action)
+    {
+        UnityEvent<T> unityEvent;
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
+        {
+            unityEvent = baseEvent as UnityEvent<T>;
+            if (unityEvent != null)
+            {
+                unityEvent.RemoveListener(action);
+            }
         }
     }
 
@@ -38,9 +85,17 @@ public static class EventUtility
     public static void FireEvent(string eventName)
     {
         UnityEvent unityEvent;
-        if (eventDictionary.TryGetValue(eventName, out unityEvent))
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
         {
-            unityEvent.Invoke();
+            unityEvent = baseEvent as UnityEvent;
+            if (unityEvent != null)
+            {
+                unityEvent.Invoke();
+            }
+            else
+            {
+                Debug.LogError("Incorrect event type for parameter");
+            }
         }
     }
 
@@ -48,7 +103,7 @@ public static class EventUtility
     public static void FireEvent<T>(string eventName, T arg)
     {
         UnityEvent<T> unityEvent;
-        if (eventDictionary.TryGetValue(eventName, out UnityEvent baseEvent))
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
         {
             unityEvent = baseEvent as UnityEvent<T>;
             if (unityEvent != null)
@@ -66,7 +121,7 @@ public static class EventUtility
     public static void FireEvent<T, U>(string eventName, T arg1, U arg2)
     {
         UnityEvent<T, U> unityEvent;
-        if (eventDictionary.TryGetValue(eventName, out UnityEvent baseEvent))
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
         {
             unityEvent = baseEvent as UnityEvent<T, U>;
             if (unityEvent != null)
@@ -84,7 +139,7 @@ public static class EventUtility
     public static void FireEventWithCustomData<T>(string eventName, T data)
     {
         UnityEvent<T> unityEvent;
-        if (eventDictionary.TryGetValue(eventName, out UnityEvent baseEvent))
+        if (eventDictionary.TryGetValue(eventName, out UnityEventBase baseEvent))
         {
             unityEvent = baseEvent as UnityEvent<T>;
             if (unityEvent != null)
